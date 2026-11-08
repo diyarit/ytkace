@@ -14,6 +14,7 @@ An open-source YouTube enhancement for iOS.
 | Liquid Glass | Glass tab bar, top bar buttons, menus, sheets, player buttons and YTKACE popups on iOS 26, with shrink on scroll and a selected tab color |
 | Tabs | Hide, reorder and add YouTube destinations |
 | Library | Downloaded video, Shorts and audio players with resume support |
+| Safari | Open in YouTube: youtube.com links open in the sideloaded app (IPA builds) |
 | Settings | Searchable settings, 15 languages and a native YouTube settings section |
 
 ## Compatibility
@@ -42,7 +43,7 @@ https://itzzace.github.io/ytkace/
 Rootless and roothide packages are both published. The repository page also has an
 [Add to Sileo](https://itzzace.github.io/ytkace/) button.
 
-**Sideloaded.** Download the IPA for your iOS version from the [latest release](https://github.com/itzzace/ytkace/releases/latest) and install it with TrollStore, AltStore, SideStore or LiveContainer.
+**Sideloaded.** Download the IPA for your iOS version from the [latest release](https://github.com/itzzace/ytkace/releases/latest) and install it with TrollStore, AltStore, SideStore or LiveContainer. The IPA also includes the Open in YouTube Safari extension: after installing, enable it under Settings > Safari > Extensions so youtube.com links open in the app.
 
 ## Build
 

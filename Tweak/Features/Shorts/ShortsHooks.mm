@@ -619,7 +619,12 @@ static BOOL YTKACEAdvanceShort(id controller, id sender) {
 }
 
 static void YTKACEUpdateShortsProgress(void) {
-    BOOL enabled = YTKACEFeatureEnabled(@"shortsProgress");
+    BOOL fullscreen = YTKACEShortsNewFullscreenActive();
+    // In pinch fullscreen YouTube draws its own timeline at the bottom, so the
+    // YTKACE line would be a duplicate. Outside fullscreen keep a gap from the
+    // floating tab bar so the two stop overlapping.
+    BOOL enabled = YTKACEFeatureEnabled(@"shortsProgress") && !fullscreen;
+    CGFloat bottomInset = enabled ? 10.0 : 0.0;
     CGFloat ratio = YTKACELastShortsDuration > 0.0
         ? (CGFloat)MIN(1.0, MAX(0.0, YTKACELastShortsTime / YTKACELastShortsDuration))
         : 0.0;
@@ -631,7 +636,7 @@ static void YTKACEUpdateShortsProgress(void) {
         if (enabled) {
             CGFloat height = 3.0;
             track.frame = CGRectMake(0.0,
-                                     MAX(0.0, CGRectGetHeight(view.bounds) - height),
+                                     MAX(0.0, CGRectGetHeight(view.bounds) - height - bottomInset),
                                      CGRectGetWidth(view.bounds),
                                      height);
             fill.frame = CGRectMake(0.0, 0.0,

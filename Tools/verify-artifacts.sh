@@ -37,6 +37,8 @@ if [[ $# -eq 2 ]]; then
   test -n "$APP"
   test ! -e "$APP/Frameworks/CydiaSubstrate.framework"
   test -f "$APP/Frameworks/YTKACE.dylib"
+  test -f "$APP/PlugIns/OpenYouTubeSafariExtension.appex/Info.plist"
+  test -x "$APP/PlugIns/OpenYouTubeSafariExtension.appex/OpenYouTubeSafariExtension"
 
   EXECUTABLE="$(
     python3 - "$APP/Info.plist" <<'PY'

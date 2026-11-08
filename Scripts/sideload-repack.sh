@@ -41,6 +41,7 @@ MAIN="$APP/$EXECUTABLE"
 
 rm -rf "$APP/YTKACE.bundle"
 rm -rf "$APP/Extensions/AppMigrationExtension.appex"
+rm -rf "$APP/PlugIns/OpenYouTubeSafariExtension.appex"
 rm -rf "$APP/_CodeSignature"
 find "$APP" -maxdepth 1 -type f \( -name 'YTK@*' -o -name 'YTK-*' \) -delete
 python3 "$ROOT/Tools/sanitize_plist.py" "$APP/Info.plist"
@@ -51,6 +52,9 @@ python3 "$ROOT/Tools/macho_inject.py" "$MAIN" \
 mkdir -p "$APP/Frameworks"
 cp "$DYLIB" "$APP/Frameworks/YTKACE.dylib"
 cp -R "$ROOT/Resources/YTKACE.bundle" "$APP/YTKACE.bundle"
+mkdir -p "$APP/PlugIns"
+cp -R "$ROOT/Resources/OpenYouTubeSafariExtension.appex" "$APP/PlugIns/"
+chmod +x "$APP/PlugIns/OpenYouTubeSafariExtension.appex/OpenYouTubeSafariExtension"
 
 bash "$ROOT/Scripts/sign-bundle.sh" "$APP"
 

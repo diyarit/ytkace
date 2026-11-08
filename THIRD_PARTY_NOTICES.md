@@ -18,6 +18,10 @@ Hide AI Channels uses the AiSList blocklist and warnlist from [aisloplist.com](h
 
 The download path implements YouTube's SABR streaming protocol. It was written for YTKACE, developed against an iPad on iOS 16. Protocol understanding came in part from reading [LuanRT/googlevideo](https://github.com/LuanRT/googlevideo), an MIT-licensed library implementing UMP and SABR. No code from that project is included.
 
+## Open in YouTube Safari extension
+
+The prebuilt `Resources/OpenYouTubeSafariExtension.appex` is included unmodified from [BillyCurtis/OpenYouTubeSafariExtension](https://github.com/BillyCurtis/OpenYouTubeSafariExtension) at commit `c87b5d5`. It opens youtube.com links in the sideloaded YouTube app once enabled under Settings > Safari > Extensions. No separate licence file is published upstream; see that repository for the author's terms.
+
 ## YTPlaybackFix
 
 The playback error recovery in `Tweak/Features/Playback/PlaybackFixHooks.mm` is adapted from [YTPlaybackFix](https://github.com/Mark02-2012/YTPlaybackFix) by Mark02, used under the MIT licence. It is his `Refresh.xm` method: intercept `handleError:` for playback error codes 14 and 0, send a `YTPlayerTapToRetryResponderEvent`, seek back to the last known position, and re-check after a second. The overall control flow is his. Changes here: the port off Logos to the runtime hooking used elsewhere, the preference gate and the logging; recovery now reloads only the player through `player:reloadWithContext:`, falling back to his retry event when that is unavailable, since the retry event reloads the whole watch page; the re-check waits three seconds instead of one, so a reload still in progress is not retried a second time; and the replay step was dropped because the selector no longer exists. The full licence text is reproduced in the header of that file.

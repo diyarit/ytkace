@@ -1387,8 +1387,7 @@ void YTKACEStartupDestinations(NSArray<NSString *> * _Nullable * _Nullable outTi
         @[@"fashion", YTKACELocalized(@"Fashion"), @"YTKACE.Preference.Tabs.Hidden.Fashion"],
         @[@"playlists", YTKACELocalized(@"Playlists"), @"YTKACE.Preference.Tabs.Hidden.Playlists"],
         @[@"history", YTKACELocalized(@"History"), @"YTKACE.Preference.Tabs.Hidden.History"],
-        @[@"notifications", YTKACELocalized(@"Notifs"), @"YTKACE.Preference.Tabs.Hidden.Notifs"],
-        @[@"watchlater", YTKACELocalized(@"WLater"), @"YTKACE.Preference.Tabs.Hidden.WatchLater"]
+        @[@"notifications", YTKACELocalized(@"Notifs"), @"YTKACE.Preference.Tabs.Hidden.Notifs"]
     ];
     NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
     NSString *selected = [defaults stringForKey:@"YTKACE.Preference.Tabs.Startup"];

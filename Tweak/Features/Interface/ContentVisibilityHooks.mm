@@ -2505,13 +2505,11 @@ static void YTKACEDidInsertPlayerOverlay(id receiver, SEL selector,
 
 static void YTKACEEnableSubheaderBar(__unsafe_unretained id receiver, SEL selector,
                                      __unsafe_unretained id view) {
-    BOOL hide = YTKACEHideTopics();
-    if (hide) {
-        YTKACECollapseSubheader(receiver);
-        return;
-    }
     if (OriginalEnableSubheaderBar != NULL) {
         ((void (*)(id, SEL, id))OriginalEnableSubheaderBar)(receiver, selector, view);
+    }
+    if (YTKACEHideTopics()) {
+        YTKACECollapseSubheader(receiver);
     }
 }
 
@@ -2521,12 +2519,23 @@ static void YTKACEChipBarUpdate(__unsafe_unretained id receiver, SEL selector,
                                 __unsafe_unretained id renderer,
                                 __unsafe_unretained id browseIdentifier,
                                 __unsafe_unretained id sectionList) {
-    BOOL hide = YTKACEHideTopics();
-    if (hide) return;
     if (OriginalChipBarUpdate != NULL) {
         ((void (*)(id, SEL, id, id, id, id, id))OriginalChipBarUpdate)(
             receiver, selector, collectionViewController, host, renderer,
             browseIdentifier, sectionList);
+    }
+    if (!YTKACEHideTopics()) return;
+    if ([host isKindOfClass:UIView.class]) {
+        UIView *bar = (UIView *)host;
+        bar.hidden = YES;
+        bar.userInteractionEnabled = NO;
+    }
+    if ([receiver isKindOfClass:UIViewController.class]) {
+        UIViewController *controller = (UIViewController *)receiver;
+        if (controller.isViewLoaded) {
+            controller.view.hidden = YES;
+            controller.view.userInteractionEnabled = NO;
+        }
     }
 }
 
@@ -2575,24 +2584,26 @@ static void YTKACEFeedHeaderScrollMode(__unsafe_unretained id receiver, SEL sele
 static IMP OriginalChipViewFrames;
 
 static id YTKACEChipViewFrames(__unsafe_unretained id receiver, SEL selector, double width) {
-    if (YTKACEHideTopics()) return nil;
+    if (YTKACEHideTopics()) return @[];
     return OriginalChipViewFrames == NULL ? nil
         : ((id (*)(id, SEL, double))OriginalChipViewFrames)(receiver, selector, width);
 }
 
 static void YTKACESubsSetChipFilterView(__unsafe_unretained id receiver, SEL selector,
                                         __unsafe_unretained id view) {
-    BOOL hide = YTKACEHideTopics();
-    if (hide) return;
     if (OriginalSubsSetChipFilterView != NULL) {
         ((void (*)(id, SEL, id))OriginalSubsSetChipFilterView)(receiver, selector, view);
+    }
+    if (!YTKACEHideTopics()) return;
+    if ([view isKindOfClass:UIView.class]) {
+        UIView *filter = (UIView *)view;
+        filter.hidden = YES;
+        filter.userInteractionEnabled = NO;
     }
 }
 
 static void YTKACESubsChipFilter(__unsafe_unretained id receiver, SEL selector,
                                  __unsafe_unretained id model) {
-    BOOL hide = YTKACEHideTopics();
-    if (hide) return;
     if (OriginalSubsChipFilter != NULL) {
         ((void (*)(id, SEL, id))OriginalSubsChipFilter)(receiver, selector, model);
     }

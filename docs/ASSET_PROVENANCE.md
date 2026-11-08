@@ -9,3 +9,5 @@ All other settings and interface icons are requested from SF Symbols at runtime 
 ## Project resources
 
 The localization files and bundle metadata are maintained as part of YTKACE. YouTube artwork, logos and thumbnails displayed by features are loaded from YouTube or from the user's own downloaded media and are not shipped in this repository.
+
+The prebuilt `Resources/OpenYouTubeSafariExtension.appex` comes from the third-party project listed under [Third-Party Notices](../THIRD_PARTY_NOTICES.md).

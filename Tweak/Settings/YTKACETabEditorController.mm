@@ -142,8 +142,7 @@ static NSString *YTKACETintHexFromColor(UIColor *color) {
         [self tab:@"fashion" title:YTKACELocalized(@"Fashion") symbol:@"tshirt" key:@"YTKACE.Preference.Tabs.Hidden.Fashion"],
         [self tab:@"playlists" title:YTKACELocalized(@"Playlists") symbol:@"music.note.list" key:@"YTKACE.Preference.Tabs.Hidden.Playlists"],
         [self tab:@"history" title:YTKACELocalized(@"History") symbol:@"clock.arrow.circlepath" key:@"YTKACE.Preference.Tabs.Hidden.History"],
-        [self tab:@"notifications" title:YTKACELocalized(@"Notifs") symbol:@"bell" key:@"YTKACE.Preference.Tabs.Hidden.Notifs"],
-        [self tab:@"watchlater" title:YTKACELocalized(@"WLater") symbol:@"clock" key:@"YTKACE.Preference.Tabs.Hidden.WatchLater"]
+        [self tab:@"notifications" title:YTKACELocalized(@"Notifs") symbol:@"bell" key:@"YTKACE.Preference.Tabs.Hidden.Notifs"]
     ];
     self.activeTabs = [NSMutableArray array];
     self.inactiveTabs = [NSMutableArray array];
@@ -151,7 +150,7 @@ static NSString *YTKACETintHexFromColor(UIColor *color) {
         BOOL initiallyInactive = [@[
             @"create", @"music", @"live", @"gaming", @"news", @"sports",
             @"learning", @"fashion", @"playlists", @"history",
-            @"notifications", @"watchlater"
+            @"notifications"
         ] containsObject:tab[@"token"]];
         id stored = YTKACEPreferenceObject(tab[@"key"]);
         BOOL hidden = [stored respondsToSelector:@selector(boolValue)] ? [stored boolValue] : initiallyInactive;

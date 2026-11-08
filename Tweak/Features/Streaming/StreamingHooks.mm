@@ -254,37 +254,47 @@ static void YTKACESetUserSelectableFormats(id receiver,
                                             NSArray *formats) {
     NSArray *selectedFormats = formats;
     if (YTKACEFeatureEnabled(@"YTKACE.Preference.Playback.LegacyQualityMenu")) {
-        id redesigned = objc_getAssociatedObject(
-            receiver, YTKACERedesignedQualityControllerKey);
-        if (redesigned == nil) {
-            Class controllerClass = NSClassFromString(
-                @"YTVideoQualitySwitchRedesignedController");
-            SEL initializer = NSSelectorFromString(
-                @"initWithServiceRegistryScope:parentResponder:");
-            id allocated = [controllerClass alloc];
-            if ([allocated respondsToSelector:initializer]) {
-                redesigned = ((id (*)(id, SEL, id, id))objc_msgSend)(
-                    allocated, initializer, nil, nil);
-                objc_setAssociatedObject(receiver,
-                    YTKACERedesignedQualityControllerKey,
-                    redesigned,
-                    OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        // These are private player APIs. A YouTube change here used to take
+        // the whole app down with an exception, so fall back to the plain
+        // format list when the legacy controller cannot be driven.
+        @try {
+            id redesigned = objc_getAssociatedObject(
+                receiver, YTKACERedesignedQualityControllerKey);
+            if (redesigned == nil) {
+                Class controllerClass = NSClassFromString(
+                    @"YTVideoQualitySwitchRedesignedController");
+                SEL initializer = NSSelectorFromString(
+                    @"initWithServiceRegistryScope:parentResponder:");
+                id allocated = [controllerClass alloc];
+                if ([allocated respondsToSelector:initializer]) {
+                    id scope = YTKACEValue(receiver, @"serviceRegistryScope");
+                    id parent = YTKACEValue(receiver, @"parentResponder");
+                    if (parent == nil) parent = YTKACEValue(receiver, @"nextResponder");
+                    redesigned = ((id (*)(id, SEL, id, id))objc_msgSend)(
+                        allocated, initializer, scope, parent);
+                    objc_setAssociatedObject(receiver,
+                        YTKACERedesignedQualityControllerKey,
+                        redesigned,
+                        OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                }
             }
-        }
-        id video = YTKACEValue(receiver, @"_video");
-        if (redesigned != nil && video != nil) {
-            @try {
-                [redesigned setValue:video forKey:@"_video"];
-            } @catch (__unused NSException *exception) {
+            id video = YTKACEValue(receiver, @"_video");
+            if (redesigned != nil && video != nil) {
+                @try {
+                    [redesigned setValue:video forKey:@"_video"];
+                } @catch (__unused NSException *exception) {
+                }
             }
-        }
-        SEL restrictSelector = NSSelectorFromString(@"addRestrictedFormats:");
-        if ([redesigned respondsToSelector:restrictSelector]) {
-            id restricted = ((id (*)(id, SEL, id))objc_msgSend)(
-                redesigned, restrictSelector, formats);
-            if ([restricted isKindOfClass:NSArray.class]) {
-                selectedFormats = restricted;
+            SEL restrictSelector = NSSelectorFromString(@"addRestrictedFormats:");
+            if ([redesigned respondsToSelector:restrictSelector]) {
+                id restricted = ((id (*)(id, SEL, id))objc_msgSend)(
+                    redesigned, restrictSelector, formats);
+                if ([restricted isKindOfClass:NSArray.class]) {
+                    selectedFormats = restricted;
+                }
             }
+        } @catch (__unused NSException *exception) {
+            selectedFormats = formats;
         }
     }
     selectedFormats = YTKACEFormatsWithoutPremium(selectedFormats);
@@ -296,52 +306,55 @@ static void YTKACESetUserSelectableFormats(id receiver,
 
 static void YTKACEQualityHandleTap(id receiver, SEL selector) {
     if (YTKACEFeatureEnabled(@"YTKACE.Preference.Playback.LegacyQualityMenu")) {
-        id controller = YTKACEValue(receiver, @"_controller");
-        id node = YTKACEValue(controller, @"node");
-        SEL identifierSelector = NSSelectorFromString(@"accessibilityIdentifier");
-        SEL labelSelector = NSSelectorFromString(@"accessibilityLabel");
-        NSString *identifier = [node respondsToSelector:identifierSelector]
-            ? ((id (*)(id, SEL))objc_msgSend)(node, identifierSelector) : nil;
-        NSString *label = [node respondsToSelector:labelSelector]
-            ? ((id (*)(id, SEL))objc_msgSend)(node, labelSelector) : nil;
-        NSRegularExpression *quality = [NSRegularExpression
-            regularExpressionWithPattern:@"\\d+p" options:0 error:nil];
-        BOOL qualityRow = [identifier hasPrefix:
-            @"id.elements.components.overflow_menu_item_"] &&
-            [label isKindOfClass:NSString.class] &&
-            [quality firstMatchInString:label options:0
-                range:NSMakeRange(0, label.length)] != nil;
-        SEL closestSelector = NSSelectorFromString(@"closestViewController");
-        id sheet = qualityRow && [node respondsToSelector:closestSelector]
-            ? ((id (*)(id, SEL))objc_msgSend)(node, closestSelector) : nil;
-        Class sheetClass = NSClassFromString(@"YTActionSheetDialogViewController");
-        Class bottomSheetClass = NSClassFromString(@"YTBottomSheetController");
-        SEL parentSelector = NSSelectorFromString(@"parentViewController");
-        id parent = [sheet respondsToSelector:parentSelector]
-            ? ((id (*)(id, SEL))objc_msgSend)(sheet, parentSelector) : nil;
-        if (sheetClass != Nil && bottomSheetClass != Nil &&
-            [sheet isKindOfClass:sheetClass] && [parent isKindOfClass:bottomSheetClass]) {
-            id delegate = YTKACEValue(sheet, @"delegate");
-            id overlay = YTKACEValue(delegate, @"parentResponder");
-            Class overlayClass = NSClassFromString(
-                @"YTMainAppVideoPlayerOverlayViewController");
-            SEL qualitySelector = NSSelectorFromString(@"didPressVideoQuality:");
-            if (overlayClass != Nil && [overlay isKindOfClass:overlayClass] &&
-                [overlay respondsToSelector:qualitySelector]) {
-                __weak id weakOverlay = overlay;
-                SEL dismissSelector = NSSelectorFromString(
-                    @"dismissViewControllerAnimated:completion:");
-                void (^completion)(void) = ^{
-                    id strongOverlay = weakOverlay;
-                    if ([strongOverlay respondsToSelector:qualitySelector]) {
-                        ((void (*)(id, SEL, id))objc_msgSend)(
-                            strongOverlay, qualitySelector, nil);
-                    }
-                };
-                ((void (*)(id, SEL, BOOL, id))objc_msgSend)(
-                    overlay, dismissSelector, YES, completion);
-                return;
+        @try {
+            id controller = YTKACEValue(receiver, @"_controller");
+            id node = YTKACEValue(controller, @"node");
+            SEL identifierSelector = NSSelectorFromString(@"accessibilityIdentifier");
+            SEL labelSelector = NSSelectorFromString(@"accessibilityLabel");
+            NSString *identifier = [node respondsToSelector:identifierSelector]
+                ? ((id (*)(id, SEL))objc_msgSend)(node, identifierSelector) : nil;
+            NSString *label = [node respondsToSelector:labelSelector]
+                ? ((id (*)(id, SEL))objc_msgSend)(node, labelSelector) : nil;
+            NSRegularExpression *quality = [NSRegularExpression
+                regularExpressionWithPattern:@"\\d+p" options:0 error:nil];
+            BOOL qualityRow = [identifier hasPrefix:
+                @"id.elements.components.overflow_menu_item_"] &&
+                [label isKindOfClass:NSString.class] &&
+                [quality firstMatchInString:label options:0
+                    range:NSMakeRange(0, label.length)] != nil;
+            SEL closestSelector = NSSelectorFromString(@"closestViewController");
+            id sheet = qualityRow && [node respondsToSelector:closestSelector]
+                ? ((id (*)(id, SEL))objc_msgSend)(node, closestSelector) : nil;
+            Class sheetClass = NSClassFromString(@"YTActionSheetDialogViewController");
+            Class bottomSheetClass = NSClassFromString(@"YTBottomSheetController");
+            SEL parentSelector = NSSelectorFromString(@"parentViewController");
+            id parent = [sheet respondsToSelector:parentSelector]
+                ? ((id (*)(id, SEL))objc_msgSend)(sheet, parentSelector) : nil;
+            if (sheetClass != Nil && bottomSheetClass != Nil &&
+                [sheet isKindOfClass:sheetClass] && [parent isKindOfClass:bottomSheetClass]) {
+                id delegate = YTKACEValue(sheet, @"delegate");
+                id overlay = YTKACEValue(delegate, @"parentResponder");
+                Class overlayClass = NSClassFromString(
+                    @"YTMainAppVideoPlayerOverlayViewController");
+                SEL qualitySelector = NSSelectorFromString(@"didPressVideoQuality:");
+                if (overlayClass != Nil && [overlay isKindOfClass:overlayClass] &&
+                    [overlay respondsToSelector:qualitySelector]) {
+                    __weak id weakOverlay = overlay;
+                    SEL dismissSelector = NSSelectorFromString(
+                        @"dismissViewControllerAnimated:completion:");
+                    void (^completion)(void) = ^{
+                        id strongOverlay = weakOverlay;
+                        if ([strongOverlay respondsToSelector:qualitySelector]) {
+                            ((void (*)(id, SEL, id))objc_msgSend)(
+                                strongOverlay, qualitySelector, nil);
+                        }
+                    };
+                    ((void (*)(id, SEL, BOOL, id))objc_msgSend)(
+                        overlay, dismissSelector, YES, completion);
+                    return;
+                }
             }
+        } @catch (__unused NSException *exception) {
         }
     }
     if (OriginalQualityHandleTap != NULL) {

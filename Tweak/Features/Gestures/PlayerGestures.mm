@@ -29,6 +29,12 @@ static const void *YTKACESeekIndicatorAssociation = &YTKACESeekIndicatorAssociat
 static const void *YTKACESeekIconAssociation = &YTKACESeekIconAssociation;
 static const void *YTKACESeekLabelAssociation = &YTKACESeekLabelAssociation;
 
+// Foldables can show the player on a display other than UIScreen.mainScreen.
+static UIScreen *YTKACEScreenForView(UIView *view) {
+    UIScreen *screen = view.window.windowScene.screen;
+    return screen != nil ? screen : UIScreen.mainScreen;
+}
+
 @interface YTKACEPriorityPanGestureRecognizer : UIPanGestureRecognizer
 @end
 
@@ -363,7 +369,7 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)other 
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         double start = volume
             ? AVAudioSession.sharedInstance.outputVolume
-            : UIScreen.mainScreen.brightness;
+            : [YTKACEScreenForView(view) brightness];
         objc_setAssociatedObject(recognizer,
                                  YTKACEGestureInitialAssociation,
                                  @(start),
@@ -391,7 +397,7 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)other 
             [slider setValue:(float)value animated:NO];
             [slider sendActionsForControlEvents:UIControlEventValueChanged];
         } else {
-            UIScreen.mainScreen.brightness = value;
+            [YTKACEScreenForView(view) setBrightness:value];
             if (both) {
                 double volumeStart = [objc_getAssociatedObject(
                     recognizer, YTKACEGestureSecondaryInitialAssociation)

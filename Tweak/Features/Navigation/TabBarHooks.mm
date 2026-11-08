@@ -710,6 +710,9 @@ static void YTKACESetPivotRenderer(id receiver, SEL selector, id renderer) {
                 [filtered addObject:candidate];
             }
 
+            // Watch Later is a playlist page, not a browse feed. On YouTube
+            // 21.44 it leaves the pivot bar unable to select any tab, so it
+            // stays out of the list until it can open outside the bar.
             NSArray<NSDictionary *> *extraTabs = @[
                 @{@"token": @"music", @"id": @"UC-9-kyTW8ZkZNDHQJ6FgpwQ",
                   @"title": @"Music", @"key": @"YTKACE.Preference.Tabs.Hidden.Music", @"icon": @1001},
@@ -731,8 +734,6 @@ static void YTKACESetPivotRenderer(id receiver, SEL selector, id renderer) {
                   @"title": @"History", @"key": @"YTKACE.Preference.Tabs.Hidden.History", @"icon": @1009},
                 @{@"token": @"notifications", @"id": @"FEnotifications_inbox",
                   @"title": @"Notifs", @"key": @"YTKACE.Preference.Tabs.Hidden.Notifs", @"icon": @1010},
-                @{@"token": @"watchlater", @"id": @"VLWL",
-                  @"title": @"WLater", @"key": @"YTKACE.Preference.Tabs.Hidden.WatchLater", @"icon": @1011},
                 @{@"token": @"posts", @"id": @"FEpost_home",
                   @"title": @"Posts", @"key": @"YTKACE.Preference.Tabs.Hidden.Posts", @"icon": @1012},
                 @{@"token": @"subscriptions", @"id": @"FEsubscriptions",

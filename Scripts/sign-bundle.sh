@@ -43,6 +43,12 @@ while IFS= read -r binary; do
   fi
 done < <(python3 "$ROOT/Tools/list_macho.py" "$APP")
 
+# Sign extension bundles as a unit so each signature carries its own
+# CFBundleIdentifier instead of the bare executable name.
+while IFS= read -r appex; do
+  "$LDID" -S "$appex"
+done < <(find "$APP" -type d -name '*.appex' -print)
+
 if [[ -s "$ENTITLEMENTS" ]]; then
   "$LDID" "-S$ENTITLEMENTS" "$MAIN"
 else
